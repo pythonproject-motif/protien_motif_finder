@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protein Motif Finder</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <main class="container">
+        <section class="hero">
+            <p class="tag">BIOINFORMATICS TOOL</p>
+            <h1>Protein Motif Finder</h1>
+            <p class="subtitle">Search protein sequences for common biological motifs or define your own pattern.</p>
+        </section>
+
+        <form method="POST" class="card">
+            <label for="sequence">Protein sequence</label>
+            <textarea id="sequence" name="sequence" placeholder="Paste a protein sequence here...">{{ sequence }}</textarea>
+
+            <div class="custom-grid">
+                <div>
+                    <label for="custom_name">Custom motif name</label>
+                    <input id="custom_name" name="custom_name" value="{{ custom_name }}" placeholder="Example: My motif">
+                </div>
+                <div>
+                    <label for="custom_pattern">Regex pattern</label>
+                    <input id="custom_pattern" name="custom_pattern" value="{{ custom_pattern }}" placeholder="Example: G..G">
+                </div>
+            </div>
+
+            <button type="submit">Find motifs</button>
+        </form>
+
+        {% if results %}
+        <section class="summary">
+            <div>
+                <span>Sequence length</span>
+                <strong>{{ sequence|length }}</strong>
+            </div>
+            <div>
+                <span>Motif hits</span>
+                <strong>{{ total_matches }}</strong>
+            </div>
+        </section>
+
+        <section class="results">
+            <h2>Results</h2>
+
+            {% for result in results %}
+            <article class="result-card">
+                <div class="result-header">
+                    <div>
+                        <h3>{{ result.name }}</h3>
+                        <code>{{ result.pattern }}</code>
+                    </div>
+                    <span class="count">{{ result.matches|length }}</span>
+                </div>
+
+                {% if result.error %}
+                    <p class="error">{{ result.error }}</p>
+                {% elif result.matches %}
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Start</th>
+                                    <th>End</th>
+                                    <th>Matched sequence</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for match in result.matches %}
+                                <tr>
+                                    <td>{{ match.start }}</td>
+                                    <td>{{ match.end }}</td>
+                                    <td><code>{{ match.sequence }}</code></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="empty">No matches found.</p>
+                {% endif %}
+            </article>
+            {% endfor %}
+        </section>
+        {% endif %}
+
+        <footer>
+            <p>Motif positions are 1-based. Patterns use Python regular expressions.</p>
+        </footer>
+    </main>
+</body>
+</html>
